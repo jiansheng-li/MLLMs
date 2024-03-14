@@ -1,23 +1,16 @@
-import sys
+import math
 import argparse
 import torch
 import os
 import json
-from PIL import Image
-import math
 from tqdm import tqdm
 import shortuuid
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-def load_pretrained_emu_model():
-    tokenizer = AutoTokenizer.from_pretrained('BAAI/Emu2-Chat')  # "BAAI/Emu2-Chat"
 
-    model = AutoModelForCausalLM.from_pretrained(
-        'BAAI/Emu2-Chat',
-        torch_dtype=torch.bfloat16,
-        low_cpu_mem_usage=True,
-        trust_remote_code=True)
-
+def load_pretrained_qwen_model():
+    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-VL-Chat", trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-VL-Chat", device_map="cuda", trust_remote_code=True).eval()
 
     if hasattr(model.config, "max_sequence_length"):
         context_len = model.config.max_sequence_length
@@ -29,7 +22,8 @@ def load_pretrained_emu_model():
 
 
 def eval_model(args):
-    tokenizer, model, context_len = load_pretrained_emu_model()
+    # Model
+    tokenizer, model, context_len = load_pretrained_qwen_model()
     questions = [json.loads(q) for q in open(os.path.expanduser(args.question_file), "r")]
     answers_file = os.path.expanduser(args.answers_file)
     os.makedirs(os.path.dirname(answers_file), exist_ok=True)
@@ -39,31 +33,24 @@ def eval_model(args):
         image_file = line["image"]
         qs = line["text"]
         cur_prompt = qs
-        image = Image.open(os.path.join(args.image_folder, image_file)).convert('RGB')
-        inputs = model.build_input_ids(
-            text=[cur_prompt],
-            tokenizer=tokenizer,
-            image=[image]
-        )
+        image_path = os.path.join(args.image_folder, image_file)
+        query = tokenizer.from_list_format([
+            {'image': f'{image_path}'},
+            {'text': f'{cur_prompt}'}
+        ])
         with torch.inference_mode():
-            output_ids = model.generate(
-                input_ids=inputs["input_ids"],
-                attention_mask=inputs["attention_mask"],
-                image=inputs["image"].to(torch.bfloat16),
-                max_new_tokens=2048,
-                length_penalty=-1)
-        outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)
+            outputs, history = model.chat(
+                tokenizer=tokenizer,
+                query=query,
+                history=None
+            )
+        outputs = outputs.strip()
         ans_id = shortuuid.uuid()
         ans_file.write(json.dumps({"question_id": idx,
                                    "prompt": cur_prompt,
                                    "text": outputs,
                                    "answer_id": ans_id,
                                    "metadata": {}}) + "\n")
-        print({"question_id": idx,
-               "prompt": cur_prompt,
-               "text": outputs,
-               "answer_id": ans_id,
-               "metadata": {}})
         ans_file.flush()
     ans_file.close()
 
@@ -74,5 +61,4 @@ if __name__ == "__main__":
     parser.add_argument("--question-file", type=str, default="tables/question.jsonl")
     parser.add_argument("--answers-file", type=str, default="answer.jsonl")
     args = parser.parse_args()
-
     eval_model(args)

@@ -1,6 +1,6 @@
 import base64
 import requests
-import math
+import json
 from tqdm import tqdm
 from data.generate_unified_input_data import *
 from data.generate_unified_output_data import *
@@ -19,19 +19,8 @@ def read_jsonl(file_path):
         return [json.loads(line) for line in file]
 
 
-def split_list(lst, n):
-    """Split a list into n (roughly) equal-sized chunks"""
-    chunk_size = math.ceil(len(lst) / n)  # integer division
-    return [lst[i:i + chunk_size] for i in range(0, len(lst), chunk_size)]
-
-
-def get_chunk(lst, n, k):
-    chunks = split_list(lst, n)
-    return chunks[k]
-
 
 def main(args):
-    logger = setup(args)
     for idx, each_dataset in enumerate(args.dataset):
         gen_sample_json(dataset=each_dataset, args=args)
         # Load the JSON file
@@ -41,7 +30,6 @@ def main(args):
             each_dataset, data, args)
         answers_file = f"{args.output_dir}/output_{each_dataset}_in_genai_vqa.jsonl"
         questions = [json.loads(q) for q in open(os.path.expanduser(question_file), "r")]
-        questions = get_chunk(questions, 1, 0)
         os.makedirs(os.path.dirname(answers_file), exist_ok=True)
         ans_file = open(answers_file, "w")
         first_dataset_flag = True if idx == 0 else False
@@ -84,8 +72,8 @@ def main(args):
                                            "metadata": {}}) + "\n")
                 ans_file.flush()
             except Exception as e:
-                print(f"发生了一个错误: {type(e).__name__}")
-                print(f"错误的具体信息是: {e}")
+                print(f"error: {type(e).__name__}")
+                print(f"error message: {e}")
         ans_file.close()
 
         # Run the subprocess and capture the output

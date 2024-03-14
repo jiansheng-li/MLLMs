@@ -1,8 +1,6 @@
 import subprocess
 import os
 import json
-import argparse
-import sys
 from datetime import datetime
 from evaluation.utils import setup_logging, analyse_unified_output
 from data.generate_unified_input_data import gen_sample_json, convert_unified_input_into_zeroshot_vqa

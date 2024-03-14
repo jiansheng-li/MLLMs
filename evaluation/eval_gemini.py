@@ -69,8 +69,8 @@ def main(args):
                                            "metadata": {}}) + "\n")
                 ans_file.flush()
             except Exception as e:
-                print(f"发生了一个错误: {type(e).__name__}")
-                print(f"错误的具体信息是: {e}")
+                print(f"error: {type(e).__name__}")
+                print(f"error message: {e}")
 
         ans_file.close()
 

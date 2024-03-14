@@ -1,23 +1,16 @@
-import sys
+import math
 import argparse
 import torch
 import os
 import json
-from PIL import Image
-import math
 from tqdm import tqdm
 import shortuuid
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModel, AutoTokenizer
 
-def load_pretrained_emu_model():
-    tokenizer = AutoTokenizer.from_pretrained('BAAI/Emu2-Chat')  # "BAAI/Emu2-Chat"
 
-    model = AutoModelForCausalLM.from_pretrained(
-        'BAAI/Emu2-Chat',
-        torch_dtype=torch.bfloat16,
-        low_cpu_mem_usage=True,
-        trust_remote_code=True)
-
+def load_pretrained_intern_model():
+    tokenizer = AutoTokenizer.from_pretrained("internlm/internlm-xcomposer-7b", trust_remote_code=True)
+    model = AutoModel.from_pretrained("internlm/internlm-xcomposer-7b", device_map="cuda", trust_remote_code=True).eval()
 
     if hasattr(model.config, "max_sequence_length"):
         context_len = model.config.max_sequence_length
@@ -27,9 +20,9 @@ def load_pretrained_emu_model():
     return tokenizer, model, context_len
 
 
-
 def eval_model(args):
-    tokenizer, model, context_len = load_pretrained_emu_model()
+    # Model
+    tokenizer, model, context_len = load_pretrained_intern_model()
     questions = [json.loads(q) for q in open(os.path.expanduser(args.question_file), "r")]
     answers_file = os.path.expanduser(args.answers_file)
     os.makedirs(os.path.dirname(answers_file), exist_ok=True)
@@ -39,31 +32,25 @@ def eval_model(args):
         image_file = line["image"]
         qs = line["text"]
         cur_prompt = qs
-        image = Image.open(os.path.join(args.image_folder, image_file)).convert('RGB')
-        inputs = model.build_input_ids(
-            text=[cur_prompt],
-            tokenizer=tokenizer,
-            image=[image]
-        )
+        image_path = os.path.join(args.image_folder, image_file)
         with torch.inference_mode():
-            output_ids = model.generate(
-                input_ids=inputs["input_ids"],
-                attention_mask=inputs["attention_mask"],
-                image=inputs["image"].to(torch.bfloat16),
-                max_new_tokens=2048,
-                length_penalty=-1)
-        outputs = tokenizer.batch_decode(output_ids, skip_special_tokens=True)
+            outputs = model.generate(
+                image=image_path,
+                text=f'{cur_prompt}',
+                do_sample=True if args.temperature > 0 else False,
+                temperature=args.temperature,
+                top_p=args.top_p,
+                num_beams=args.num_beams,
+                max_new_tokens=5000,
+                use_cache=True,
+                history=None)
+        outputs = outputs.strip()
         ans_id = shortuuid.uuid()
         ans_file.write(json.dumps({"question_id": idx,
                                    "prompt": cur_prompt,
                                    "text": outputs,
                                    "answer_id": ans_id,
                                    "metadata": {}}) + "\n")
-        print({"question_id": idx,
-               "prompt": cur_prompt,
-               "text": outputs,
-               "answer_id": ans_id,
-               "metadata": {}})
         ans_file.flush()
     ans_file.close()
 
@@ -73,6 +60,8 @@ if __name__ == "__main__":
     parser.add_argument("--image-folder", type=str, default="")
     parser.add_argument("--question-file", type=str, default="tables/question.jsonl")
     parser.add_argument("--answers-file", type=str, default="answer.jsonl")
+    parser.add_argument("--temperature", type=float, default=0.2)
+    parser.add_argument("--top_p", type=float, default=None)
+    parser.add_argument("--num_beams", type=int, default=1)
     args = parser.parse_args()
-
     eval_model(args)
