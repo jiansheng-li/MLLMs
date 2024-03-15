@@ -1,8 +1,8 @@
+# [On the Out-Of-Distribution Generalization of Multimodal Large Language Models](https://arxiv.org/abs/2402.06599)
 
 ## 🐙 Requirements
 
 1. Clone this repository and navigate to the project directory
-
 ```bash
 git clone git@github.com:jiansheng-li/MLLMs.git
 cd MLLMs
@@ -16,7 +16,7 @@ conda activate MLLMs
 ```
 
 3. Navigate to the LLaVA directory and install its dependencies
-   (if you want to evalution LLaVA)
+   (if you want to evaluate LLaVA)
 ```bash
 cd LLaVA
 pip install -e .
@@ -29,7 +29,24 @@ cd MLLMs
 pip install -e .
 ```
 
-#evaluation
+
+## dataset
+#### TODO 
+share in hugging face
+
+## preparation
+
+To evaluate LLaMA, please download model first, and change your model path in module/LLaMA.py
+
+By using the package of 
+[![Demo](https://img.shields.io/badge/repo-LLaVA-blue)](https://github.com/haotian-liu/LLaVA)
+[![Demo](https://img.shields.io/badge/repo-llama-blue)](https://github.com/meta-llama/llama)
+[![Demo](https://img.shields.io/badge/repo-minigpt4-blue)](https://github.com/camenduru/minigpt4)
+[![Demo](https://img.shields.io/badge/repo-mplug_owl2-blue)](https://github.com/X-PLUG/mPLUG-Owl)
+, thanks to authors of the repos we used.
+
+
+## evaluation
 1.zero-shot evaluation
 
 model list:['LLaVA', 'Qwen', 'mPlug', 'intern', 'cogvlm', 'minigpt', 'LLaMA', 'blip2',
@@ -37,7 +54,6 @@ model list:['LLaVA', 'Qwen', 'mPlug', 'intern', 'cogvlm', 'minigpt', 'LLaMA', 'b
 
 All models are evaluated based on LLaVA format
 
-To evaluate LLaMA, please download model first, and change your model path in module/LLaMA.py
 ```bash
 python evaluation/eval_zeroshot.py --model_name model_to_choose
 ```
@@ -63,9 +79,7 @@ You can evaluate different model of CLIP.
 python evaluation/eval_CLIP --model_name available clip model
 ```
 
-![Static Badge](https://img.shields.io/badge/Model-CLIP-green) 
-
-The available clip model can refer to one provided by openai on https://github.com/openai/CLIP
+The available clip model can refer to one provided by openai on [![Demo](https://img.shields.io/badge/Model-CLIP-blue)](https://github.com/openai/CLIP)
 
 2.2 linear_probe
 
