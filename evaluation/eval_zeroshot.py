@@ -37,9 +37,7 @@ def main(args):
             "python", f"module/{args.model_name}.py",
             "--question-file", question_file,
             "--image-folder", f"{args.data_dir}",
-            "--answers-file", answer_file,
-            "--temperature", "0",
-            "--conv-mode", "vicuna_v1"
+            "--answers-file", answer_file
         ]
         # Run the subprocess and capture the output
         result = subprocess.run(
