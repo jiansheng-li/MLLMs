@@ -35,7 +35,6 @@ def eval_model(args):
         qs = line["text"]
         cur_prompt = qs
         image = Image.open(os.path.join(args.image_folder, image_file)).convert('RGB')
-        # prompt = "Question: how many cats are there? Answer:"
         inputs = processor(images=image, text=qs, return_tensors="pt").to(device)
         outputs = model.generate(
                 **inputs,

@@ -10,9 +10,6 @@ def gen_sample_json(dataset='PACS', args=None):
     # Load the JSON file
     with open('./data/dataset_info.json', 'r') as f:
         data = json.load(f)
-        if dataset not in data:
-            raise ValueError(
-                f"Dataset '{dataset}' not supported! Please update metadata for such dataset in dataset_info.json")
         dataset_info = data[dataset]
     domains = dataset_info['domains']
     class_names = dataset_info['class_names']
@@ -22,7 +19,6 @@ def gen_sample_json(dataset='PACS', args=None):
     selected_images_info = {'dataset': dataset, 'domains': domains,
                             'class_names': class_names, 'samples': {}}
 
-    # Iterate through each domain and class
     for domain in domains:
         domain_path = os.path.join(args.data_dir, dataset, domain)
         if os.path.exists(domain_path) and os.path.isdir(domain_path):
@@ -36,8 +32,6 @@ def gen_sample_json(dataset='PACS', args=None):
                     if len(images) >= args.num_sample:
                         sampled_images = images[0:args.num_sample]
                     else:
-                        logger.info(
-                            f"Not enough images in {os.path.join(domain, class_name)} to sample {args.num_sample} images, only with {len(images)}.")
                         sampled_images = images
                     for image in sampled_images:
                         image_id = len(selected_images_info['samples']) + 1

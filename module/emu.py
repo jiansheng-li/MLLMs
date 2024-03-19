@@ -12,15 +12,23 @@ from accelerate import init_empty_weights, infer_auto_device_map, load_checkpoin
 
 def load_pretrained_emu_model():
     tokenizer = AutoTokenizer.from_pretrained('BAAI/Emu2-Chat')
+
+    # single gpu
+
+    # model = AutoModelForCausalLM.from_pretrained(
+    #     'BAAI/Emu2-Chat',
+    #     torch_dtype=torch.bfloat16,
+    #     low_cpu_mem_usage=True,
+    #     trust_remote_code=True)
+
+
+    # mutil gpu
     with init_empty_weights():
         model = AutoModelForCausalLM.from_pretrained(
             'BAAI/Emu2-Chat',
             torch_dtype=torch.bfloat16,
             low_cpu_mem_usage=True,
             trust_remote_code=True)
-
-    # mutil gpu
-
     # Use the appropriate memory of your GPU
     device_map = infer_auto_device_map(model, max_memory={0: '20000MiB', 1: '20000MiB', 2: '20000MiB', 3: '20000MiB'},
                                        no_split_module_classes=['Block', 'LlamaDecoderLayer'])
@@ -71,11 +79,6 @@ def eval_model(args):
                                    "text": outputs,
                                    "answer_id": ans_id,
                                    "metadata": {}}) + "\n")
-        print({"question_id": idx,
-               "prompt": cur_prompt,
-               "text": outputs,
-               "answer_id": ans_id,
-               "metadata": {}})
         ans_file.flush()
     ans_file.close()
 
