@@ -64,6 +64,31 @@ To evaluate GPT-4
 ```bash
 python evaluation/eval_gpt.py --model_name gpt --openai_api_key your openai key
 ```
+Please refer to https://platform.openai.com/docs/api-reference/chat/create for the official version of gpt-4.
+```python
+from openai import OpenAI
+
+client = OpenAI()
+base64_img='the base64mode of the image to evaluation.'
+response = client.chat.completions.create(
+    model="gpt-4-vision-preview",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "our prompt"},
+                {
+                    "type": "image_url",
+                    "image_url": f"data:image/jpeg;base64,{base64_img}",
+                },
+            ],
+        }
+    ],
+    max_tokens=1024,
+)
+
+print(response.choices[0])
+```
 
 To evaluate gemini
 ```bash
