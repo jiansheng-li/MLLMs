@@ -45,8 +45,6 @@ By using the package of
 [![Demo](https://img.shields.io/badge/repo-mplug_owl2-blue)](https://github.com/X-PLUG/mPLUG-Owl)
 , thanks to authors of the repos we used.
 
-
-
 ## evaluation
 1.zero-shot evaluation
 
