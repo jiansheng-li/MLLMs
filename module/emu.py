@@ -20,6 +20,8 @@ def load_pretrained_emu_model():
             trust_remote_code=True)
 
     # mutil gpu
+
+    # Use the appropriate memory of your GPU
     device_map = infer_auto_device_map(model, max_memory={0: '20000MiB', 1: '20000MiB', 2: '20000MiB', 3: '20000MiB'},
                                        no_split_module_classes=['Block', 'LlamaDecoderLayer'])
     # input and output logits should be on same device
