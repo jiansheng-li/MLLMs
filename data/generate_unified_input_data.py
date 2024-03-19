@@ -57,7 +57,7 @@ def gen_sample_json(dataset='PACS', args=None):
 
 
 def convert_unified_input_into_zeroshot_vqa(dataset, data, args):
-    question_file = f'{args.output_dir}/input_{dataset}_in_llava_vqa.jsonl'
+    question_file = f'{args.output_dir}/input_{dataset}_in_{args.model_name}_vqa.jsonl'
     first_flag = True
     class_names = data['class_names']
     for item_id, item in data['samples'].items():

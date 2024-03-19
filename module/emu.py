@@ -8,16 +8,27 @@ import math
 from tqdm import tqdm
 import shortuuid
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from accelerate import init_empty_weights, infer_auto_device_map, load_checkpoint_and_dispatch
 
 def load_pretrained_emu_model():
-    tokenizer = AutoTokenizer.from_pretrained('BAAI/Emu2-Chat')  # "BAAI/Emu2-Chat"
+    tokenizer = AutoTokenizer.from_pretrained('BAAI/Emu2-Chat')
+    with init_empty_weights():
+        model = AutoModelForCausalLM.from_pretrained(
+            'BAAI/Emu2-Chat',
+            torch_dtype=torch.bfloat16,
+            low_cpu_mem_usage=True,
+            trust_remote_code=True)
 
-    model = AutoModelForCausalLM.from_pretrained(
-        'BAAI/Emu2-Chat',
-        torch_dtype=torch.bfloat16,
-        low_cpu_mem_usage=True,
-        trust_remote_code=True)
+    # mutil gpu
+    device_map = infer_auto_device_map(model, max_memory={0: '20000MiB', 1: '20000MiB', 2: '20000MiB', 3: '20000MiB'},
+                                       no_split_module_classes=['Block', 'LlamaDecoderLayer'])
+    # input and output logits should be on same device
+    device_map["model.decoder.lm.lm_head"] = 0
 
+    model = load_checkpoint_and_dispatch(
+        model,
+        'local/path/to/hf/version/Emu2/model',
+        device_map=device_map).eval()
 
     if hasattr(model.config, "max_sequence_length"):
         context_len = model.config.max_sequence_length
@@ -25,7 +36,6 @@ def load_pretrained_emu_model():
         context_len = 2048
 
     return tokenizer, model, context_len
-
 
 
 def eval_model(args):
@@ -38,7 +48,7 @@ def eval_model(args):
         idx = line["question_id"]
         image_file = line["image"]
         qs = line["text"]
-        cur_prompt = qs
+        cur_prompt = '[<IMG_PLH>]' + qs
         image = Image.open(os.path.join(args.image_folder, image_file)).convert('RGB')
         inputs = model.build_input_ids(
             text=[cur_prompt],

@@ -5,12 +5,12 @@ import os
 import json
 from tqdm import tqdm
 import shortuuid
-from transformers import AutoModel, AutoTokenizer
+from modelscope import AutoModel, AutoTokenizer
 
 
 def load_pretrained_intern_model():
     tokenizer = AutoTokenizer.from_pretrained("internlm/internlm-xcomposer-7b", trust_remote_code=True)
-    model = AutoModel.from_pretrained("internlm/internlm-xcomposer-7b", device_map="cuda", trust_remote_code=True).eval()
+    model = AutoModel.from_pretrained("internlm/internlm-xcomposer-7b", device_map="cuda", trust_remote_code=True).cuda().eval()
 
     if hasattr(model.config, "max_sequence_length"):
         context_len = model.config.max_sequence_length
