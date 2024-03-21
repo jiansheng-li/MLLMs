@@ -26,7 +26,7 @@ def disable_torch_init():
 
 def eval_model(args):
     disable_torch_init()
-    model_path = os.path.expanduser(f'your path to mplug model')
+    model_path = 'MAGAer13/mplug-owl2-llama2-7b'
     model_name = get_model_name_from_path(model_path)
     tokenizer, model, image_processor, context_len = load_pretrained_model(model_path, None, model_name,
                                                                            load_8bit=False, load_4bit=False,
