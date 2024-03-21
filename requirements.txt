@@ -74,7 +74,7 @@ soupsieve
 sympy
 threadpoolctl
 tiktoken
-tokenizers>=0.12.1,<0.14
+tokenizers
 torch
 torchvision
 tqdm
