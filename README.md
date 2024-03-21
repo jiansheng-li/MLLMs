@@ -40,14 +40,7 @@ To evaluate LLaMA, please download model first, and change your model path in mo
 
 To use mutil gpu mode for Emu2-chat, please download model first, and change your model path in module/emu.py
 
-By using the package of 
-[![Demo](https://img.shields.io/badge/repo-LLaVA-blue)](https://github.com/haotian-liu/LLaVA)
-[![Demo](https://img.shields.io/badge/repo-llama-blue)](https://github.com/meta-llama/llama)
-[![Demo](https://img.shields.io/badge/repo-minigpt4-blue)](https://github.com/camenduru/minigpt4)
-[![Demo](https://img.shields.io/badge/repo-mplug_owl2-blue)](https://github.com/X-PLUG/mPLUG-Owl)
-, thanks to authors of the repos we used.
-
-You can query the official usage methods of all models on the hugging face.
+You can query the official usage methods of all models on the hugging face or github.
 
 ## evaluation
 1.zero-shot evaluation
@@ -131,3 +124,10 @@ python evaluation/eval_gpt_ICL.py --model_name gpt --openai_api_key your openai 
 ```bash
 python evaluation/eval_gemini_ICL.py --model_name gemini --gemini_api_key your gemini key --ice_num 0
 ```
+
+
+# Related Projects
+[![Demo](https://img.shields.io/badge/repo-LLaVA-blue)](https://github.com/haotian-liu/LLaVA)
+[![Demo](https://img.shields.io/badge/repo-llama-blue)](https://github.com/meta-llama/llama)
+[![Demo](https://img.shields.io/badge/repo-minigpt4-blue)](https://github.com/camenduru/minigpt4)
+[![Demo](https://img.shields.io/badge/repo-mplug_owl2-blue)](https://github.com/X-PLUG/mPLUG-Owl)
